@@ -1,1 +1,1 @@
-export { default as ArcGISServerType } from './ArcGISServerType'
+export { default as ServerType } from './ServiceType'

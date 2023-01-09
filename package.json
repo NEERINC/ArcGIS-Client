@@ -1,12 +1,7 @@
 {
   "name": "arcgis-client",
   "version": "0.0.0",
-  "description": "",
-  "main": "./dist/index.js",
-  "scripts": {
-    "build": "tsc -p .",
-    "test": "jest"
-  },
+  "description": "JavaScript client for connecting and receiving data from ArcGIS servers",
   "keywords": [
     "arcgis",
     "arcgis-client",
@@ -15,8 +10,25 @@
     "map-server",
     "map-service"
   ],
-  "author": "Matthew Downs <matthew@neer.ai>",
+  "homepage": "https://github.com/NEERINC/ArcGIS-Client#readme",
+  "bugs": {
+    "url": "https://github.com/NEERINC/ArcGIS-Client/issues"
+  },
   "license": "MIT",
+  "author": "Matthew Downs <matthew@neer.ai>",
+  "files": [
+    "./dist/**/*"
+  ],
+  "main": "./dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NEERINC/ArcGIS-Client.git"
+  },
+  "scripts": {
+    "prebuild": "rimraf ./dist",
+    "build": "tsc -p ./tsconfig.json",
+    "test": "jest"
+  },
   "dependencies": {
     "@esri/arcgis-rest-feature-service": "^4.0.3",
     "@esri/arcgis-rest-request": "^4.1.1",
