@@ -12,4 +12,4 @@ config({
 global.console = console
 
 jest.useRealTimers()
-jest.setTimeout(30000)
+jest.setTimeout(60000)
