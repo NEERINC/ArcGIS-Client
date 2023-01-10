@@ -118,6 +118,7 @@ class FeatureService extends Service<ServerType.FeatureServer> {
       returnZ: 'false',
       returnM: 'false',
       returnExceededLimitFeatures: 'true',
+      returnGeometry: 'true'
     })
     if (this.identityManager?.token != null) params.append('token', this.identityManager.token)
 

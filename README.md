@@ -30,8 +30,8 @@ async function main() {
     // Get features (results can differ based on provided options object)
     const features = await service.getFeatures(layer, /*options*/)
 
-    // Get vector file at tile [0, 0, 0]
-    const vector = await service.getVector(layer, 0, 0, 0)
+    // Get vector file with bounding box
+    const vector = await service.getVector(layer, [-1, -1, 1, 1])
   }))
 }
 ```
