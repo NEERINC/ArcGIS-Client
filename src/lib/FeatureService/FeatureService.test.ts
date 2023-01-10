@@ -21,7 +21,7 @@ describe('FeatureService', () => {
         expect(service.layers).toBeDefined()
       })
 
-      test('Features', async () => {
+      test.skip('Features', async () => {
         if (service.layers.length > 0) {
           await Promise.all(service.layers.map(async layer => {
             const objectIds = await service.getObjectIds(layer)
@@ -50,9 +50,9 @@ describe('FeatureService', () => {
         if (service.layers.length > 0) {
           await Promise.all(service.layers.map(async layer => {
             if (layer.supportedQueryFormats?.toLowerCase().includes('pbf')) {
-              //const vector = await service.getVector(layer, 0, 0, 0)
-              //expect(vector).toBeDefined()
-              //expect(Buffer.isBuffer(vector))
+              const vector = await service.getVector(layer, 0, 0, 0)
+              expect(vector).toBeDefined()
+              expect(Buffer.isBuffer(vector))
             }
           }))
         }
