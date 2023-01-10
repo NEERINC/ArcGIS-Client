@@ -84,66 +84,9 @@ class FeatureService extends Service<ServerType.FeatureServer> {
 
   /**
    * Query the feature service to return a vector binary file given the provided layer and bounding box
-   *
-   * @param layer The layer definition
-   * @param bbox The bounding box vector tile
    */
-  public async getVector(layer: LayerDefinition, bbox: BBox): Promise<Buffer>
-  /**
-   * Query the feature service to return a vector binary file given the provided layer and tile coordinates
-   *
-   * @param layer The layer definition
-   * @param x The x-coordinate of the vector tile
-   * @param y The y-coordinate of the vector tile
-   * @param z The zoom level of the vector tile
-   */
-  public async getVector(layer: LayerDefinition, x: number, y: number, z: number): Promise<Buffer>
-  public async getVector(layer: LayerDefinition, ...args: [BBox] | [number, number, number]): Promise<Buffer> {
+  public async getVector(layer: LayerDefinition, bbox: BBox, options?: GetVectorOptions): Promise<Buffer> {
     if (layer.id == null) throw new Error('Layer ID is null')
-
-    let bbox: BBox
-    if (args.length === 3) {
-      bbox = tileToBBOX([args[0], args[1], args[2]]) as BBox
-    } else {
-      bbox = args[0]
-    }
-
-    const url = this.getVectorUrl(layer, bbox)
-    const response = await fetch(url, {
-      method: 'GET'
-    })
-    if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${await response.text()}`)
-
-    const arrayBuffer = await response.arrayBuffer()
-
-    return Buffer.from(arrayBuffer)
-  }
-
-  /**
-   * Construct a URL for the feature service to return a vector binary file given the provided layer and bounding box
-   *
-   * @param layer The layer definition
-   * @param bbox The bounding box vector tile
-   */
-  public getVectorUrl(layer: LayerDefinition, bbox: BBox): string
-  /**
-   * Construct a URL for the feature service to return a vector binary file given the provided layer and tile coordinates
-   *
-   * @param layer The layer definition
-   * @param x The x-coordinate of the vector tile
-   * @param y The y-coordinate of the vector tile
-   * @param z The zoom level of the vector tile
-   */
-  public getVectorUrl(layer: LayerDefinition, x: number, y: number, z: number): string
-  public getVectorUrl(layer: LayerDefinition, ...args: [BBox] | [number, number, number]): string {
-    if (layer.id == null) throw new Error('Layer ID is null')
-
-    let bbox: BBox
-    if (args.length === 3) {
-      bbox = tileToBBOX([args[0], args[1], args[2]]) as BBox
-    } else {
-      bbox = args[0]
-    }
 
     const extent = {
       xmin: bbox[0],
@@ -166,7 +109,7 @@ class FeatureService extends Service<ServerType.FeatureServer> {
       precision: '8',
       quantizationParameters: JSON.stringify({
         extent,
-        tolerance: 1,
+        tolerance: options?.tolerance || 0.25,
         mode: 'view'
       }),
       resultType: 'tile',
@@ -178,7 +121,15 @@ class FeatureService extends Service<ServerType.FeatureServer> {
     })
     if (this.identityManager?.token != null) params.append('token', this.identityManager.token)
 
-    return `${this.url}/${layer.id}/query?${params.toString()}`
+    const url = `${this.url}/${layer.id}/query?${params.toString()}`
+    const response = await fetch(url, {
+      method: 'GET'
+    })
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${await response.text()}`)
+
+    const arrayBuffer = await response.arrayBuffer()
+
+    return Buffer.from(arrayBuffer)
   }
 }
 

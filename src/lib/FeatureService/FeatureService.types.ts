@@ -16,7 +16,9 @@ export type GetVectorOptions = Omit<IQueryFeaturesOptions,
   | 'returnCountOnly'
   | 'returnExtentOnly'
   | 'f'
->
+> & {
+  tolerance?: number
+}
 
 export interface LayerDefinition extends ILayerDefinition {
   standardMaxRecordCount?: number
