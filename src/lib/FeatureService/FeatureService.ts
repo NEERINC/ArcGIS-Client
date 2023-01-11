@@ -2,31 +2,38 @@ import {
   getLayer,
   getService,
   IFeature,
-  IFeatureServiceDefinition,
-  queryFeatures
+  IFeatureServiceDefinition
 } from '@esri/arcgis-rest-feature-service'
 import { ArcGISIdentityManager } from '@esri/arcgis-rest-request'
-import {
-  BBox,
-  FeatureCollection
-} from 'geojson'
+import { BBox } from 'geojson'
 import { ServerType } from '../../types'
 import Service from '../Service'
 import {
+  FeatureCache,
   GetFeaturesOptions,
   GetVectorOptions,
-  LayerDefinition
+  LayerDefinition,
+  VectorCache
 } from './FeatureService.types'
+import { bboxToTile, tileToQuadkey } from '@mapbox/tilebelt'
 
 class FeatureService extends Service<ServerType.FeatureServer> {
   public readonly definition: IFeatureServiceDefinition
   public readonly layers: LayerDefinition[]
 
-  constructor(definition: IFeatureServiceDefinition, layers: LayerDefinition[], url: string, identityManager?: ArcGISIdentityManager) {
+  protected featureCache?: FeatureCache
+  protected vectorCache?: VectorCache
+
+  constructor(definition: IFeatureServiceDefinition, layers: LayerDefinition[], url: string, identityManager?: ArcGISIdentityManager, cache?: boolean) {
     super(ServerType.FeatureServer, url, identityManager)
 
     this.definition = definition
     this.layers = layers
+
+    if (cache === true) {
+      this.featureCache = {}
+      this.vectorCache = {}
+    }
   }
 
   public static async load(url: string, identityManager?: ArcGISIdentityManager | undefined) {
@@ -100,6 +107,12 @@ class FeatureService extends Service<ServerType.FeatureServer> {
   public async getFeatures(layer: LayerDefinition, bbox: BBox, options?: GetFeaturesOptions): Promise<IFeature[]> {
     if (layer.id == null) throw new Error('Layer ID is null')
 
+    const tile = bboxToTile(bbox)
+    const quadKey = tileToQuadkey(tile)
+    if (this.featureCache != null) {
+      if (this.featureCache[quadKey] != null) return this.featureCache[quadKey]
+    }
+
     const extent = {
       xmin: bbox[0],
       ymin: bbox[1],
@@ -140,6 +153,10 @@ class FeatureService extends Service<ServerType.FeatureServer> {
     if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${await response.text()}`)
 
     const { features } = await response.json()
+    if (this.featureCache != null) {
+      this.featureCache[quadKey] = features
+    }
+
     return features
   }
 
@@ -148,6 +165,12 @@ class FeatureService extends Service<ServerType.FeatureServer> {
    */
   public async getVector(layer: LayerDefinition, bbox: BBox, options?: GetVectorOptions): Promise<Buffer> {
     if (layer.id == null) throw new Error('Layer ID is null')
+
+    const tile = bboxToTile(bbox)
+    const quadKey = tileToQuadkey(tile)
+    if (this.vectorCache != null) {
+      if (this.vectorCache[quadKey] != null) return this.vectorCache[quadKey]
+    }
 
     const extent = {
       xmin: bbox[0],
@@ -189,9 +212,24 @@ class FeatureService extends Service<ServerType.FeatureServer> {
     })
     if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${await response.text()}`)
 
-    const arrayBuffer = await response.arrayBuffer()
+    const vector = Buffer.from(await response.arrayBuffer())
+    if (this.vectorCache != null) {
+      this.vectorCache[quadKey] = vector
+    }
 
-    return Buffer.from(arrayBuffer)
+    return vector
+  }
+
+  public clearCache() {
+    if (this.featureCache != null) {
+      delete this.featureCache
+      this.featureCache = {}
+    }
+
+    if (this.vectorCache != null) {
+      delete this.vectorCache
+      this.vectorCache = {}
+    }
   }
 }
 
