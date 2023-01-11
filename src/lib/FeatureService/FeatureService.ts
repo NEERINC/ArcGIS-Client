@@ -97,7 +97,7 @@ class FeatureService extends Service<ServerType.FeatureServer> {
    * getFeatures(layer, { resultType: 'standard' })
    * ```
    */
-  public async getFeatureCollection(layer: LayerDefinition, bbox: BBox, options?: GetFeaturesOptions): Promise<FeatureCollection> {
+  public async getFeatures(layer: LayerDefinition, bbox: BBox, options?: GetFeaturesOptions): Promise<IFeature[]> {
     if (layer.id == null) throw new Error('Layer ID is null')
 
     const extent = {
@@ -139,7 +139,8 @@ class FeatureService extends Service<ServerType.FeatureServer> {
     })
     if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${await response.text()}`)
 
-    return await response.json()
+    const { features } = await response.json()
+    return features
   }
 
   /**

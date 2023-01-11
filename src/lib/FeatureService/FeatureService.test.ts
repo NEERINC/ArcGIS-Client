@@ -32,24 +32,24 @@ describe('FeatureService', () => {
         if (service.layers.length > 0) {
           await Promise.all(service.layers.map(async layer => {
             const objectIds = await service.getObjectIds(layer, bbox)
-            const featureCollection = await service.getFeatureCollection(layer, bbox)
+            const features = await service.getFeatures(layer, bbox)
 
             console.log(layer.name, {
               objects: objectIds.length,
-              features: featureCollection.features.length
+              features: features.length
             })
 
             expect(objectIds).toBeDefined()
-            expect(featureCollection.features).toBeDefined()
+            expect(features).toBeDefined()
 
             if (layer.standardMaxRecordCount != null) {
               if (objectIds.length > layer.standardMaxRecordCount) {
-                expect(featureCollection.features.length).toBeLessThanOrEqual(layer.standardMaxRecordCount)
+                expect(features.length).toBeLessThanOrEqual(layer.standardMaxRecordCount)
               } else {
-                expect(featureCollection.features.length).toBeLessThanOrEqual(objectIds.length)
+                expect(features.length).toBeLessThanOrEqual(objectIds.length)
               }
             } else {
-              expect(featureCollection.features.length).toBeLessThanOrEqual(objectIds.length)
+              expect(features.length).toBeLessThanOrEqual(objectIds.length)
             }
           }))
         }
