@@ -3,14 +3,13 @@ import {
   getService,
   IFeature,
   IFeatureServiceDefinition,
-  IQueryFeaturesResponse,
   queryFeatures
 } from '@esri/arcgis-rest-feature-service'
 import { ArcGISIdentityManager } from '@esri/arcgis-rest-request'
-import { tileToBBOX } from '@mapbox/tilebelt'
-// @ts-ignore
-import tileDecode from 'arcgis-pbf-parser'
-import { BBox } from 'geojson'
+import {
+  BBox,
+  FeatureCollection
+} from 'geojson'
 import { ServerType } from '../../types'
 import Service from '../Service'
 import {
@@ -46,17 +45,46 @@ class FeatureService extends Service<ServerType.FeatureServer> {
   /**
    * Query the feature service to return an array of all object IDs given the provided layer
    */
-  public async getObjectIds(layer: LayerDefinition): Promise<number[]> {
+  public async getObjectIds(layer: LayerDefinition, bbox: BBox): Promise<number[]> {
     if (layer.id == null) throw new Error('Layer ID is null')
 
-    const response = await queryFeatures({
-      url: `${this.url}/${layer.id}`,
-      returnIdsOnly: true,
-      f: 'json',
-      authentication: this.identityManager
-    }) as { objectIds: number[] }
+    const extent = {
+      xmin: bbox[0],
+      ymin: bbox[1],
+      xmax: bbox[2],
+      ymax: bbox[3],
+      spatialReference: {
+        latestWkid: 4326,
+        wkid: 4326
+      }
+    }
 
-    return response.objectIds
+    const params = new URLSearchParams({
+      f: 'json',
+      geometry: JSON.stringify(extent),
+      geometryType: 'esriGeometryEnvelope',
+      where: '1=1',
+      quantizationParameters: JSON.stringify({
+        extent,
+        mode: 'view'
+      }),
+      returnIdsOnly: 'true'
+    })
+    if (this.identityManager?.token != null) params.append('token', this.identityManager.token)
+
+    const url = `${this.url}/${layer.id}/query?${params.toString()}`
+    const response = await fetch(url, {
+      method: 'GET'
+    })
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${await response.text()}`)
+
+    const result = await response.json() as {
+      objectIdFieldName: string,
+      objectIds: number[] | null
+    }
+    if (result.objectIds == null) return []
+
+    return result.objectIds
   }
 
   /**
@@ -69,17 +97,49 @@ class FeatureService extends Service<ServerType.FeatureServer> {
    * getFeatures(layer, { resultType: 'standard' })
    * ```
    */
-  public async getFeatures(layer: LayerDefinition, options?: GetFeaturesOptions): Promise<IFeature[]> {
+  public async getFeatureCollection(layer: LayerDefinition, bbox: BBox, options?: GetFeaturesOptions): Promise<FeatureCollection> {
     if (layer.id == null) throw new Error('Layer ID is null')
 
-    const response = await queryFeatures({
-      url: `${this.url}/${layer.id}`,
-      authentication: this.identityManager,
-      f: 'geojson',
-      ...options
-    }) as unknown as IQueryFeaturesResponse
+    const extent = {
+      xmin: bbox[0],
+      ymin: bbox[1],
+      xmax: bbox[2],
+      ymax: bbox[3],
+      spatialReference: {
+        latestWkid: 4326,
+        wkid: 4326
+      }
+    }
 
-    return response.features
+    const params = new URLSearchParams({
+      f: 'geojson',
+      geometry: options?.geometry != null ? JSON.stringify(options.geometry) : JSON.stringify(extent),
+      geometryType: options?.geometryType || 'esriGeometryEnvelope',
+      where: options?.where || '1=1',
+      inSR: options?.inSR != null ? typeof options.inSR === 'string' ? options.inSR : JSON.stringify(options.inSR) : '4326',
+      outSR: options?.outSR != null ? typeof options.outSR === 'string' ? options.outSR : JSON.stringify(options.outSR) : '4326',
+      outFields: options?.outFields != null ? options.outFields != '*' ? options.outFields.join(',') : '*' : '*',
+      precision: options?.geometryPrecision?.toString() || '8',
+      quantizationParameters: JSON.stringify({
+        extent,
+        mode: 'view'
+      }),
+      resultType: options?.resultType || 'standard',
+      spatialRel: options?.spatialRel || 'esriSpatialRelIntersects',
+      returnZ: options?.returnZ === true ? 'true' : 'false',
+      returnM: options?.returnM === true ? 'true' : 'false',
+      returnExceededLimitFeatures: options?.returnExceededLimitFeatures === false ? 'false' : 'true',
+      returnGeometry: options?.returnGeometry === false ? 'false' : 'true'
+    })
+    if (this.identityManager?.token != null) params.append('token', this.identityManager.token)
+
+    const url = `${this.url}/${layer.id}/query?${params.toString()}`
+    const response = await fetch(url, {
+      method: 'GET'
+    })
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${await response.text()}`)
+
+    return await response.json()
   }
 
   /**
@@ -102,6 +162,7 @@ class FeatureService extends Service<ServerType.FeatureServer> {
     const params = new URLSearchParams({
       f: 'pbf',
       geometry: JSON.stringify(extent),
+      geometryType: 'esriGeometryEnvelope',
       where: '1=1',
       inSR: '4326',
       outSR: '4326',
@@ -109,12 +170,11 @@ class FeatureService extends Service<ServerType.FeatureServer> {
       precision: '8',
       quantizationParameters: JSON.stringify({
         extent,
-        tolerance: options?.tolerance || 0.25,
+        tolerance: options?.tolerance || 0.0001,
         mode: 'view'
       }),
       resultType: 'tile',
       spatialRel: 'esriSpatialRelIntersects',
-      geometryType: 'esriGeometryEnvelope',
       returnZ: 'false',
       returnM: 'false',
       returnExceededLimitFeatures: 'true',
