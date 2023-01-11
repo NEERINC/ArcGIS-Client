@@ -148,7 +148,8 @@ class FeatureService extends Service<ServerType.FeatureServer> {
 
     const url = `${this.url}/${layer.id}/query?${params.toString()}`
     const response = await fetch(url, {
-      method: 'GET'
+      method: 'GET',
+      signal: options?.signal
     })
     if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${await response.text()}`)
 
@@ -208,7 +209,8 @@ class FeatureService extends Service<ServerType.FeatureServer> {
 
     const url = `${this.url}/${layer.id}/query?${params.toString()}`
     const response = await fetch(url, {
-      method: 'GET'
+      method: 'GET',
+      signal: options?.signal
     })
     if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${await response.text()}`)
 
