@@ -36,7 +36,7 @@ class FeatureService extends Service<ServerType.FeatureServer> {
     }
   }
 
-  public static async load(url: string, identityManager?: ArcGISIdentityManager | undefined) {
+  public static async load(url: string, identityManager?: ArcGISIdentityManager | undefined, cache?: boolean) {
     const definition = await getService({
       url,
       authentication: identityManager
@@ -46,7 +46,7 @@ class FeatureService extends Service<ServerType.FeatureServer> {
       url: `${url}/${id!}`
     })))
 
-    return new FeatureService(definition, layers, url, identityManager)
+    return new FeatureService(definition, layers, url, identityManager, cache)
   }
 
   /**
