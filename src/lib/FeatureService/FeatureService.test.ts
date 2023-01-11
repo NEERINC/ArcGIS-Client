@@ -34,11 +34,6 @@ describe('FeatureService', () => {
             const objectIds = await service.getObjectIds(layer, bbox)
             const features = await service.getFeatures(layer, bbox)
 
-            console.log(layer.name, {
-              objects: objectIds.length,
-              features: features.length
-            })
-
             expect(objectIds).toBeDefined()
             expect(features).toBeDefined()
 
@@ -55,7 +50,7 @@ describe('FeatureService', () => {
         }
       })
 
-      test.skip('Vector', async () => {
+      test('Vector', async () => {
         if (service.layers.length > 0) {
           await Promise.all(service.layers.map(async layer => {
             if (layer.supportedQueryFormats?.toLowerCase().includes('pbf')) {
