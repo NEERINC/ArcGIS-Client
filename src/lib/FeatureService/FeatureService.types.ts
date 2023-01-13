@@ -12,7 +12,9 @@ export type GetFeaturesOptions = Omit<IQueryFeaturesOptions,
   | 'returnIdsOnly'
   | 'returnCountOnly'
   | 'returnExtentOnly'
->
+> & {
+  fetchOptions?: RequestInit
+}
 
 export type GetVectorOptions = Omit<IQueryFeaturesOptions,
   | 'f'
@@ -24,6 +26,7 @@ export type GetVectorOptions = Omit<IQueryFeaturesOptions,
   | 'returnExtentOnly'
 > & {
   tolerance?: number
+  fetchOptions?: RequestInit
 }
 
 export interface LayerDefinition extends ILayerDefinition {

@@ -135,11 +135,11 @@ class FeatureService extends Service<ServerType.FeatureServer> {
       f: 'geojson',
       geometry: options?.geometry != null ? JSON.stringify(options.geometry) : JSON.stringify(extent),
       geometryType: options?.geometryType || 'esriGeometryEnvelope',
+      geometryPrecision: '8',
       where: options?.where || '1=1',
       inSR: options?.inSR != null ? typeof options.inSR === 'string' ? options.inSR : JSON.stringify(options.inSR) : '4326',
       outSR: options?.outSR != null ? typeof options.outSR === 'string' ? options.outSR : JSON.stringify(options.outSR) : '4326',
       outFields: options?.outFields != null ? options.outFields != '*' ? options.outFields.join(',') : '*' : '*',
-      precision: options?.geometryPrecision?.toString() || '8',
       quantizationParameters: JSON.stringify({
         extent,
         mode: 'view'
@@ -156,7 +156,8 @@ class FeatureService extends Service<ServerType.FeatureServer> {
     const url = `${this.url}/${layer.id}/query?${params.toString()}`
     const response = await fetch(url, {
       method: 'GET',
-      signal: options?.signal
+      signal: options?.signal,
+      ...options?.fetchOptions
     })
     if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${await response.text()}`)
 
@@ -195,11 +196,11 @@ class FeatureService extends Service<ServerType.FeatureServer> {
       f: 'pbf',
       geometry: JSON.stringify(extent),
       geometryType: 'esriGeometryEnvelope',
+      geometryPrecision: '8',
       where: '1=1',
       inSR: '4326',
       outSR: '4326',
       outFields: '*',
-      precision: '8',
       quantizationParameters: JSON.stringify({
         extent,
         tolerance: options?.tolerance || 0.0001,
@@ -217,7 +218,8 @@ class FeatureService extends Service<ServerType.FeatureServer> {
     const url = `${this.url}/${layer.id}/query?${params.toString()}`
     const response = await fetch(url, {
       method: 'GET',
-      signal: options?.signal
+      signal: options?.signal,
+      ...options?.fetchOptions
     })
     if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${await response.text()}`)
 

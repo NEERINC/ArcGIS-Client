@@ -68,29 +68,27 @@ describe('FeatureService', () => {
                 if (feature.geometry != null) {
                   expect(feature.geometry.type).toBeDefined()
                   expect(feature.properties).toBeDefined()
+
                   /*
                   switch (feature.geometry.type) {
                     case 'Point':
-                      expect(feature.geometry.coordinates[0]).toBeGreaterThanOrEqual(bbox[0])
-                      expect(feature.geometry.coordinates[0]).toBeLessThanOrEqual(bbox[2])
-                      expect(feature.geometry.coordinates[1]).toBeGreaterThanOrEqual(bbox[1])
-                      expect(feature.geometry.coordinates[1]).toBeLessThanOrEqual(bbox[3])
+                      feature.geometry.coordinates.map(coordinate => {
+                        expect(countDecimals(coordinate)).toBeLessThanOrEqual(8)
+                      })
                       break
                     case 'LineString':
                       feature.geometry.coordinates.forEach(point => {
-                        expect(point[0]).toBeGreaterThanOrEqual(bbox[0])
-                        expect(point[0]).toBeLessThanOrEqual(bbox[2])
-                        expect(point[1]).toBeGreaterThanOrEqual(bbox[1])
-                        expect(point[1]).toBeLessThanOrEqual(bbox[3])
+                        point.forEach(coordinate => {
+                          expect(countDecimals(coordinate)).toBeLessThanOrEqual(8)
+                        })
                       })
                       break
                     case 'Polygon':
                       feature.geometry.coordinates.forEach(lineString => {
                         lineString.forEach(point => {
-                          expect(point[0]).toBeGreaterThanOrEqual(bbox[0])
-                          expect(point[0]).toBeLessThanOrEqual(bbox[2])
-                          expect(point[1]).toBeGreaterThanOrEqual(bbox[1])
-                          expect(point[1]).toBeLessThanOrEqual(bbox[3])
+                          point.forEach(coordinate => {
+                            expect(countDecimals(coordinate)).toBeLessThanOrEqual(8)
+                          })
                         })
                       })
                       break
@@ -98,10 +96,9 @@ describe('FeatureService', () => {
                       feature.geometry.coordinates.forEach(polygon => {
                         polygon.forEach(lineString => {
                           lineString.forEach(point => {
-                            expect(point[0]).toBeGreaterThanOrEqual(bbox[0])
-                            expect(point[0]).toBeLessThanOrEqual(bbox[2])
-                            expect(point[1]).toBeGreaterThanOrEqual(bbox[1])
-                            expect(point[1]).toBeLessThanOrEqual(bbox[3])
+                            point.forEach(coordinate => {
+                              expect(countDecimals(coordinate)).toBeLessThanOrEqual(8)
+                            })
                           })
                         })
                       })
@@ -118,3 +115,8 @@ describe('FeatureService', () => {
     })
   }
 })
+
+function countDecimals(value: number) {
+  if(Math.floor(value.valueOf()) === value.valueOf()) return 0
+  return value.toString().split('.')[1].length || 0
+}
