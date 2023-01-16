@@ -33,9 +33,14 @@ describe('FeatureService', () => {
           await Promise.all(service.layers.map(async layer => {
             const objectIds = await service.getObjectIds(layer, bbox)
             const features = await service.getFeatures(layer, bbox)
+            const featuresByFirstObjectId = await service.getFeatures(layer, bbox, { objectIds: objectIds.slice(0, 1) })
 
             expect(objectIds).toBeDefined()
             expect(features).toBeDefined()
+
+            if (objectIds.length > 0 && features.length > 0) {
+              expect(featuresByFirstObjectId.length).toBe(1)
+            }
 
             if (layer.standardMaxRecordCount != null) {
               if (objectIds.length > layer.standardMaxRecordCount) {
