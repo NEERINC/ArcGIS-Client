@@ -152,6 +152,7 @@ class FeatureService extends Service<ServerType.FeatureServer> {
       returnGeometry: options?.returnGeometry === false ? 'false' : 'true'
     })
     if (this.identityManager?.token != null) params.append('token', this.identityManager.token)
+    if (options?.objectIds != null) params.append('objectIds', options.objectIds.join(','))
 
     const url = `${this.url}/${layer.id}/query?${params.toString()}`
     const response = await fetch(url, {
