@@ -1,10 +1,9 @@
 import {
-  IFeature,
   IFeatureServiceDefinition,
   ILayerDefinition
 } from '@esri/arcgis-rest-feature-service'
 import { ArcGISIdentityManager } from '@esri/arcgis-rest-request'
-import { BBox } from 'geojson'
+import { BBox, Feature } from 'geojson'
 import { ServerType } from '../../types'
 import Service from '../Service'
 import {
@@ -111,7 +110,7 @@ class FeatureService extends Service<ServerType.FeatureServer> {
    * getFeatures(layer, { resultType: 'standard' })
    * ```
    */
-  public async getFeatures(layer: LayerDefinition, bbox: BBox, options?: GetFeaturesOptions): Promise<IFeature[]> {
+  public async getFeatures(layer: LayerDefinition, bbox: BBox, options?: GetFeaturesOptions): Promise<Feature[]> {
     if (layer.id == null) throw new Error('Layer ID is null')
 
     const tile = bboxToTile(bbox)

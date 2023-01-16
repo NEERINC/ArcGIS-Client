@@ -1,8 +1,8 @@
 import {
-  IFeature,
   ILayerDefinition,
   IQueryFeaturesOptions
 } from '@esri/arcgis-rest-feature-service'
+import { Feature } from 'geojson'
 
 export type GetFeaturesOptions = Omit<IQueryFeaturesOptions,
   | 'f'
@@ -34,5 +34,5 @@ export interface LayerDefinition extends ILayerDefinition {
   tileMaxRecordCount?: number
 }
 
-export type FeatureCache = Record<string, IFeature[]>
+export type FeatureCache = Record<string, Feature[]>
 export type VectorCache = Record<string, Buffer>
