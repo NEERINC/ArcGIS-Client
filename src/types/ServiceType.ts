@@ -1,6 +1,7 @@
 enum ServerType {
   FeatureServer = 'FeatureServer',
-  MapServer = 'MapServer'
+  MapServer = 'MapServer',
+  VectorTileServer = 'VectorTileServer'
 }
 
 export default ServerType
