@@ -234,14 +234,12 @@ class FeatureService extends Service<ServerType.FeatureServer> {
     return vector
   }
 
+  /**
+   * @returns Key-value pair where the keys are any of the property keys found in the entire layer
+   * and the value is an array of tuples, where the first part is the feature ID and the last part is the property value
+   */
   public async getProperties(layer: LayerDefinition, bbox: BBox, options?: GetPropertiesOptions) {
     if (layer.id == null) throw new Error('Layer ID is null')
-
-    const tile = bboxToTile(bbox)
-    const quadKey = tileToQuadkey(tile)
-    if (this.featureCache != null) {
-      if (this.featureCache[quadKey] != null) return this.featureCache[quadKey]
-    }
 
     const extent = {
       xmin: bbox[0],
@@ -287,7 +285,16 @@ class FeatureService extends Service<ServerType.FeatureServer> {
 
     const { features }: { features: { id?: number, properties: Record<string, any> }[] } = await response.json()
 
-    return features
+    return features.reduce((pv: Record<string, [number, any][]>, cv) => {
+      if (cv.id == null) return pv
+
+      const nv = { ...pv }
+      Object.keys(cv.properties).forEach(key => {
+        if (nv[key] == null) nv[key] = [[cv.id!, cv.properties[key]]]
+        else nv[key].push([cv.id!, cv.properties[key]])
+      })
+      return nv
+    }, {})
   }
 
   public clearCache() {

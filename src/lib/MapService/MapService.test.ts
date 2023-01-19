@@ -22,12 +22,12 @@ describe('MapService', () => {
     describe(label, () => {
       beforeAll(async () => {
         service = await MapService.load(url, identityManager)
+        expect(service.definition).toBeDefined()
+        expect(service.layers).toBeDefined()
       })
 
       test('getExportUrl', () => {
         const exportUrl = service.getExportUrl(bbox)
-        console.log(exportUrl)
-
         expect(exportUrl).toBeDefined()
       })
     })
