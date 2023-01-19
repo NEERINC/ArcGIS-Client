@@ -12,6 +12,8 @@ class MapService extends Service<ServerType.MapServer> {
   public readonly definition: IFeatureServiceDefinition
   public readonly layers: LayerDefinition[]
 
+  public get tile() { return `${this.url}/tile/{z}/{x}/{y}` }
+
   constructor(definition: IFeatureServiceDefinition, layers: LayerDefinition[], url: string, identityManager?: ArcGISIdentityManager, cache?: boolean) {
     super(ServerType.MapServer, url, identityManager)
     this.definition = definition
@@ -37,6 +39,10 @@ class MapService extends Service<ServerType.MapServer> {
     }))
 
     return new MapService(definition, layers, url, identityManager)
+  }
+
+  public getTileUrl(z: number, x: number, y: number) {
+    return `${this.url}/tile/${z}/${x}/${y}`
   }
 
   public getExportUrl(bbox: BBox, options?: MapServiceOptions) {

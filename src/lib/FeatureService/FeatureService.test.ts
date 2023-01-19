@@ -121,10 +121,14 @@ describe('FeatureService', () => {
       test('Properties', async () => {
         if (service.layers.length > 0) {
           await Promise.all(service.layers.map(async layer => {
-            const properties = await service.getProperties(layer, bbox, {
-
+            const properties = await service.getProperties(layer, bbox)
+            expect(properties).toBeDefined()
+            expect(typeof properties === 'object').toBeTruthy()
+            Object.keys(properties).forEach(key => {
+              const values = properties[key]
+              expect(values.length).toBeGreaterThan(0)
+              expect(values.every(value => typeof value[0] === 'number'))
             })
-            console.log(properties)
           }))
         }
       })
