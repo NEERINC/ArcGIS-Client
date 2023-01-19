@@ -4,14 +4,16 @@ import {
 } from '@esri/arcgis-rest-feature-service'
 import { ArcGISIdentityManager } from '@esri/arcgis-rest-request'
 import { BBox, Feature } from 'geojson'
-import { ServerType } from '../../types'
+import {
+  LayerDefinition,
+  ServerType
+} from '../../types'
 import Service from '../Service'
 import {
   FeatureCache,
   GetFeaturesOptions,
   GetPropertiesOptions,
   GetVectorOptions,
-  LayerDefinition,
   VectorCache
 } from './FeatureService.types'
 import { bboxToTile, tileToQuadkey } from '@mapbox/tilebelt'

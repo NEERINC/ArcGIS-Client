@@ -1,7 +1,4 @@
-import {
-  ILayerDefinition,
-  IQueryFeaturesOptions
-} from '@esri/arcgis-rest-feature-service'
+import { IQueryFeaturesOptions } from '@esri/arcgis-rest-feature-service'
 import { Feature } from 'geojson'
 
 export type GetFeaturesOptions = Omit<IQueryFeaturesOptions,
@@ -42,11 +39,6 @@ export type GetPropertiesOptions = Omit<IQueryFeaturesOptions,
   | 'returnGeometry'
 > & {
   fetchOptions?: Omit<RequestInit, 'signal'>
-}
-
-export interface LayerDefinition extends ILayerDefinition {
-  standardMaxRecordCount?: number
-  tileMaxRecordCount?: number
 }
 
 export type FeatureCache = Record<string, Feature[]>
