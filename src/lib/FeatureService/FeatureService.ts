@@ -9,6 +9,7 @@ import Service from '../Service'
 import {
   FeatureCache,
   GetFeaturesOptions,
+  GetPropertiesOptions,
   GetVectorOptions,
   LayerDefinition,
   VectorCache
@@ -229,6 +230,62 @@ class FeatureService extends Service<ServerType.FeatureServer> {
     }
 
     return vector
+  }
+
+  public async getProperties(layer: LayerDefinition, bbox: BBox, options?: GetPropertiesOptions) {
+    if (layer.id == null) throw new Error('Layer ID is null')
+
+    const tile = bboxToTile(bbox)
+    const quadKey = tileToQuadkey(tile)
+    if (this.featureCache != null) {
+      if (this.featureCache[quadKey] != null) return this.featureCache[quadKey]
+    }
+
+    const extent = {
+      xmin: bbox[0],
+      ymin: bbox[1],
+      xmax: bbox[2],
+      ymax: bbox[3],
+      spatialReference: {
+        latestWkid: 4326,
+        wkid: 4326
+      }
+    }
+
+    const params = new URLSearchParams({
+      f: 'geojson',
+      geometry: JSON.stringify(extent),
+      geometryType: options?.geometryType || 'esriGeometryEnvelope',
+      geometryPrecision: '8',
+      where: options?.where || '1=1',
+      inSR: options?.inSR != null ? typeof options.inSR === 'string' ? options.inSR : JSON.stringify(options.inSR) : '4326',
+      outSR: options?.outSR != null ? typeof options.outSR === 'string' ? options.outSR : JSON.stringify(options.outSR) : '4326',
+      outFields: options?.outFields != null ? options.outFields != '*' ? options.outFields.join(',') : '*' : '*',
+      quantizationParameters: JSON.stringify({
+        extent,
+        mode: 'view'
+      }),
+      resultType: options?.resultType || 'standard',
+      spatialRel: options?.spatialRel || 'esriSpatialRelIntersects',
+      returnZ: options?.returnZ === true ? 'true' : 'false',
+      returnM: options?.returnM === true ? 'true' : 'false',
+      returnExceededLimitFeatures: options?.returnExceededLimitFeatures === false ? 'false' : 'true',
+      returnGeometry: 'false'
+    })
+    if (this.identityManager?.token != null) params.append('token', this.identityManager.token)
+    if (options?.objectIds != null) params.append('objectIds', options.objectIds.join(','))
+
+    const url = `${this.url}/${layer.id}/query?${params.toString()}`
+    const response = await fetch(url, {
+      method: 'GET',
+      signal: options?.signal,
+      ...options?.fetchOptions
+    })
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText} - ${await response.text()}`)
+
+    const { features }: { features: { id?: number, properties: Record<string, any> }[] } = await response.json()
+
+    return features
   }
 
   public clearCache() {

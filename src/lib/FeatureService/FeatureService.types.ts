@@ -13,7 +13,7 @@ export type GetFeaturesOptions = Omit<IQueryFeaturesOptions,
   | 'returnCountOnly'
   | 'returnExtentOnly'
 > & {
-  fetchOptions?: RequestInit
+  fetchOptions?: Omit<RequestInit, 'signal'>
 }
 
 export type GetVectorOptions = Omit<IQueryFeaturesOptions,
@@ -26,7 +26,22 @@ export type GetVectorOptions = Omit<IQueryFeaturesOptions,
   | 'returnExtentOnly'
 > & {
   tolerance?: number
-  fetchOptions?: RequestInit
+  fetchOptions?: Omit<RequestInit, 'signal'>
+}
+
+export type GetPropertiesOptions = Omit<IQueryFeaturesOptions,
+  | 'f'
+  | 'url'
+  | 'authentication'
+  | 'geometry'
+  | 'geometryPrecision'
+  | 'quantizationParameters'
+  | 'returnIdsOnly'
+  | 'returnCountOnly'
+  | 'returnExtentOnly'
+  | 'returnGeometry'
+> & {
+  fetchOptions?: Omit<RequestInit, 'signal'>
 }
 
 export interface LayerDefinition extends ILayerDefinition {

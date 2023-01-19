@@ -117,11 +117,22 @@ describe('FeatureService', () => {
           }))
         }
       })
+
+      test('Properties', async () => {
+        if (service.layers.length > 0) {
+          await Promise.all(service.layers.map(async layer => {
+            const properties = await service.getProperties(layer, bbox, {
+
+            })
+            console.log(properties)
+          }))
+        }
+      })
     })
   }
 })
 
 function countDecimals(value: number) {
-  if(Math.floor(value.valueOf()) === value.valueOf()) return 0
+  if (Math.floor(value.valueOf()) === value.valueOf()) return 0
   return value.toString().split('.')[1].length || 0
 }
